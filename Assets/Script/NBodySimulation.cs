@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class NBodySimulation : MonoBehaviour {
-    CelestialBody[] bodies;
-    static NBodySimulation instance;
+    public CelestialBody[] bodies;
+    public static NBodySimulation instance;
 
     void Awake () {
 
