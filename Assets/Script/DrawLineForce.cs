@@ -9,6 +9,7 @@ public class DrawLineForce : MonoBehaviour
     public GameObject viewForcePoint;
     public CelestialBody mainPlanet;
     public Dropdown dropdown;
+    public float scale = 1;
     private bool isForceObjects = true;
 
     private List<GameObject> forcePoints;
@@ -69,11 +70,12 @@ public class DrawLineForce : MonoBehaviour
                     Gizmos.DrawLine(forcePoints[i].transform.position, dir);
                     for (int j = 1; j < NBodySimulation.instance.bodies.Length; j++)
                     {
-                        dir = VectorReduction(CalculateTidalPower(forcePoints[i])[j], forcePoints[i].transform.position, 15);
+                        dir = VectorReduction(CalculateTidalPower(forcePoints[i])[j], forcePoints[i].transform.position, mainPlanet.sizeVectorForce);
                         Gizmos.color = Color.green;
                         Gizmos.DrawLine(forcePoints[i].transform.position, dir);
                     }
                 }
+
             else
                 for (int i = 0; i < forcePoints.Count; i++)
                 {
@@ -109,17 +111,46 @@ public class DrawLineForce : MonoBehaviour
             if (body.name != mainPlanet.name)
             {
 
-                float acceleration;
+                float Fgrav;       
+                //distance
                 float dst = Vector3.Distance(body.Position, mainPlanet.Position);
+                //Vector to point on planet
                 Vector3 pointToPlanet = point.transform.position - mainPlanet.Position;
-                Vector3 horDir = (body.Position - mainPlanet.Position).normalized;
-                Vector3 vertDir = (point.transform.position.y < 0) ? Vector3.down : Vector3.up;
-                acceleration = Universe.gravitationalConstant * body.mass * mainPlanet.mass / Mathf.Pow(dst, 2);
-                Vector3 forceVert = vertDir * 1.5f * acceleration * (mainPlanet.radius / dst)
-                           * Mathf.Cos(2f * CalculateAngle(mainPlanet.Position - body.Position, pointToPlanet));
-                Vector3 forceHor = horDir * 1.5f * acceleration * (mainPlanet.radius / dst)
-                           * Mathf.Sin(2f * CalculateAngle(horDir, pointToPlanet));
-                //Debug.Log("”гол:" + CalculateAngle(horDir, pointToPlanet));
+                Vector3 NpointToPlanet;
+                Vector3 Ndistance;
+                float pointDist = pointToPlanet.magnitude;
+                //NpointToPlanet = new Vector3(pointToPlanet.x, 0, pointToPlanet.z);
+                //Point to planet X-Z projection
+                NpointToPlanet = Vector3.ProjectOnPlane(pointToPlanet, new Vector3(0.0f, 1.0f, 0.0f));
+                //Ndistance = body.Position - mainPlanet.Position;
+
+                Ndistance = Vector3.ProjectOnPlane((body.Position - mainPlanet.Position),new Vector3(0.0f, 1.0f, 0.0f));
+
+                float alpha = Vector3.Angle(pointToPlanet,NpointToPlanet);
+                float doublealpha = 2.0f * alpha;
+                alpha = alpha * Mathf.PI / 180;
+                Fgrav = Universe.gravitationalConstant * (body.mass * mainPlanet.mass* pointDist) /(dst* dst* dst);
+                
+                float HorMag = 2.0f* Fgrav * Mathf.Cos(alpha)*100;
+                float VertMag = -1.0f*Fgrav*Mathf.Sin(alpha)*100;
+
+                Vector3 horDir = Ndistance.normalized;
+                Vector3 vertDir = pointToPlanet.y > 0.0f ? new Vector3(0.0f, 1.0f, 0.0f) : new Vector3(0.0f, -1.0f, 0.0f);
+
+                Vector3 forceVert = vertDir * VertMag;
+                Vector3 forceHor = horDir * HorMag;
+
+                //Debug.Log(alpha + "= Alpha");
+                Debug.Log(Mathf.Cos(doublealpha) + (1 / 3) + " Cos2a+0.3");
+                Debug.Log(Mathf.Sin(alpha) + " Sin a");
+                //Debug.Log(forceVert.magnitude+" Force Vert");
+                //Debug.Log(forceHor.magnitude+" Force Hor");
+                //Debug.Log(Fgrav + " Fgrav");
+                //Debug.Log(vertDir + " VertDir");
+                //Debug.Log(horDir + " HorDir");
+                //Debug.Log(HorMag + " HorMag");
+                //Debug.Log(VertMag + " VertMag");
+
                 forceBodies.Add(forceVert + forceHor);
                 horForces.Add(forceHor);
                 vertForces.Add(forceVert);
@@ -158,14 +189,5 @@ public class DrawLineForce : MonoBehaviour
 
     }
 
-    public float CalculateAngle(Vector3 from, Vector3 to)
-    {
-
-        var scalarMultiplier = Vector3.Dot(from, to);
-        var cos = scalarMultiplier / (from.magnitude * to.magnitude);
-        float angle = Mathf.Acos(cos);
-
-        return angle;
-    }
 
 }
