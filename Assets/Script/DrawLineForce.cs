@@ -133,6 +133,7 @@ public class DrawLineForce : MonoBehaviour
                 
                 float HorMag = 2.0f* Fgrav * Mathf.Cos(alpha)*100;
                 float VertMag = -1.0f*Fgrav*Mathf.Sin(alpha)*100;
+                float Forcemagnitude = Mathf.Sqrt((HorMag/100)* (HorMag / 100) + (VertMag/100)* (VertMag / 100));
 
                 Vector3 horDir = Ndistance.normalized;
                 Vector3 vertDir = pointToPlanet.y > 0.0f ? new Vector3(0.0f, 1.0f, 0.0f) : new Vector3(0.0f, -1.0f, 0.0f);
@@ -140,9 +141,10 @@ public class DrawLineForce : MonoBehaviour
                 Vector3 forceVert = vertDir * VertMag;
                 Vector3 forceHor = horDir * HorMag;
 
+                Debug.Log("Tidal force magnitude is:" + Forcemagnitude);
                 //Debug.Log(alpha + "= Alpha");
-                Debug.Log(Mathf.Cos(doublealpha) + (1 / 3) + " Cos2a+0.3");
-                Debug.Log(Mathf.Sin(alpha) + " Sin a");
+                //Debug.Log(Mathf.Cos(doublealpha) + (1 / 3) + " Cos2a+0.3");
+                //Debug.Log(Mathf.Sin(alpha) + " Sin a");
                 //Debug.Log(forceVert.magnitude+" Force Vert");
                 //Debug.Log(forceHor.magnitude+" Force Hor");
                 //Debug.Log(Fgrav + " Fgrav");
